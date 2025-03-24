@@ -4,9 +4,15 @@ import { SigninDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+    private config: ConfigService,
+  ) {}
 
   async signup(signupDto: SignupDto) {
     const hash = await argon.hash(signupDto.password);
@@ -19,7 +25,11 @@ export class AuthService {
       });
 
       const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
+      return {
+        data: userWithoutPassword,
+        message: 'User created successfully',
+        code: 201,
+      };
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError) {
         if (err.code === 'P2002')
@@ -44,20 +54,34 @@ export class AuthService {
     }
 
     const isPasswordValid = await argon.verify(
-      signInDto.password,
       user.password,
+      signInDto.password,
     );
 
     if (!isPasswordValid) {
       throw new ForbiddenException('Invalid credentials');
     }
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
 
-    // const payload = { sub: user.id, email: user.email, role: user.role };
-    // return {
-    //   user,
-    //   access_token: this.jwtService.sign(payload),
-    // };
+    console.log('User ', this.signToken(user.id, user.email));
+    return {
+      access_token: await this.signToken(user.id, user.email),
+      message: 'User logged in successfully',
+      code: 201,
+    };
+  }
+
+  async signToken(userId: string, email: string): Promise<string> {
+    const payload = {
+      sub: userId,
+      email,
+    };
+    const secret = this.config.get<string>('JWT_SECRET');
+
+    const token = await this.jwt.signAsync(payload, {
+      expiresIn: '15m',
+      secret: secret,
+    });
+
+    return token;
   }
 }
