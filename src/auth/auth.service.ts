@@ -62,7 +62,6 @@ export class AuthService {
       throw new ForbiddenException('Invalid credentials');
     }
 
-    console.log('User ', this.signToken(user.id, user.email));
     return {
       access_token: await this.signToken(user.id, user.email),
       message: 'User logged in successfully',
