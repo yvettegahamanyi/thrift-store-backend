@@ -25,6 +25,8 @@ model User {
   role        UserRole @default(CUSTOMER) // User's role
   isActive    Boolean  @default(true) // Whether the user account is active
   donations   Donation[] // User's donations
+  carts       Cart[] // User's carts
+  orders      Order[] // User's orders
   createdAt   DateTime @default(now()) // When the user was created
   updatedAt   DateTime @updatedAt // When the user was last updated
 
@@ -48,9 +50,10 @@ model Donation {
   title        String
   description  String
   status       DonationStatus  @default(PENDING)
-  pickupAddress String?       
-  pickupDate   DateTime?       
+  pickupAddress String       
+  pickupDate   DateTime       
   donorId      String
+  products     Product[] // User's donations
   donor        User            @relation(fields: [donorId], references: [id])
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
@@ -62,4 +65,85 @@ enum DonationStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Decimal  @db.Decimal(10, 2)
+  quantity    Int      @default(1)
+  isActive    Boolean  @default(true)
+  donationId  String?  
+  cartItem   CartItem?
+  order      Order?
+  donation    Donation? @relation(fields: [donationId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("products")
+}
+
+model Cart {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  isActive  Boolean   @default(true)
+  items     CartItem[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String   
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String   @unique
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  status          OrderStatus @default(PROCESSING)
+  refNumber       String
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  shippingAddress String?
+  billingAddress  String?
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  productId       String      @unique
+  product         Product     @relation(fields: [productId], references: [id])
+  payments        Payment[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Payment {
+  id            String         @id @default(uuid())
+  status       PaymentStatus  @default(PENDING)
+  billNumber   String
+  amount       Decimal        @db.Decimal(10, 2)
+  paymentMethod String
+  orderId      String
+  order        Order          @relation(fields: [orderId], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+enum OrderStatus {
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
 }

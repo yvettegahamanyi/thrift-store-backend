@@ -10,37 +10,53 @@ export class DonationService {
 
   async create(userId: string, createDonationDto: CreateDonationDto) {
     try {
+      const { pickupDate, ...otherData } = createDonationDto;
+
+      const formattedPickupDate = pickupDate
+        ? new Date(pickupDate).toISOString()
+        : null;
+
       const donation = await this.prisma.donation.create({
         data: {
           donorId: userId,
-          ...createDonationDto,
+          pickupDate: formattedPickupDate as string,
+          ...otherData,
         },
       });
 
-      return donation;
+      return {
+        data: donation,
+        message: 'Donation created successfully',
+        code: 201,
+      };
     } catch (error) {
-      // Optional: add error handling
+      console.error('Error creating donation:', error);
+
+      if (error instanceof Error) {
+        throw new Error(`Failed to create donation: ${error.message}`);
+      }
+
       throw new Error(
-        `Failed to create donation: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'An unexpected error occurred while creating the donation.',
       );
     }
   }
-
-  findAll(user: User) {
+  async findAll(user: User) {
     //check if user is a donor and fetch donations by donorId else fetch all donations
     if (user.role === UserRole.DONOR) {
-      const donations = this.prisma.donation.findMany({
+      const donations = await this.prisma.donation.findMany({
         where: {
           donorId: user.id,
         },
       });
+
       return {
         data: donations,
         message: 'Donations fetched successfully',
         code: 200,
       };
     }
-    const donations = this.prisma.donation.findMany();
+    const donations = await this.prisma.donation.findMany();
     return {
       data: donations,
       message: 'Donations fetched successfully',

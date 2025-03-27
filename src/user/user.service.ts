@@ -40,16 +40,7 @@ export class UserService {
   }
 
   async getAllUsers() {
-    const users = await this.prisma.user.findMany({
-      select: {
-        firstName: true,
-        lastName: true,
-        email: true,
-        role: true,
-        status: true,
-        createdAt: true,
-      },
-    });
+    const users = await this.prisma.user.findMany();
     return {
       data: users,
       message: 'Users fetched successfully',

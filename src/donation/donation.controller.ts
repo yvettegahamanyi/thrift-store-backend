@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   UseGuards,
   Put,
@@ -23,11 +22,8 @@ export class DonationController {
   constructor(private readonly donationService: DonationService) {}
 
   @Post()
-  create(
-    @GetUser() userId: string,
-    @Body() createDonationDto: CreateDonationDto,
-  ) {
-    return this.donationService.create(userId, createDonationDto);
+  create(@GetUser() user: User, @Body() createDonationDto: CreateDonationDto) {
+    return this.donationService.create(user?.id, createDonationDto);
   }
 
   @Get()
