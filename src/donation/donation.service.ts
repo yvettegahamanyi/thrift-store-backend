@@ -93,7 +93,7 @@ export class DonationService {
       throw new BadRequestException('Donation not found');
     }
     // if donation is found update it
-    const updatedDonation = this.prisma.donation.update({
+    const updatedDonation = await this.prisma.donation.update({
       where: {
         id: id,
       },

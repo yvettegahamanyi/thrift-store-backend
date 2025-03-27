@@ -75,8 +75,10 @@ model Product {
   quantity    Int      @default(1)
   isActive    Boolean  @default(true)
   donationId  String?  
-  cartItem   CartItem?
-  order      Order?
+  cartId    String?  // Nullable foreign key
+  cart      Cart?    @relation(fields: [cartId], references: [id])
+  orderId   String?   // Foreign key to Order (nullable, if product is not yet ordered)
+  order     Order?    @relation(fields: [orderId], references: [id])
   donation    Donation? @relation(fields: [donationId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -89,23 +91,13 @@ model Cart {
   userId    String
   user      User      @relation(fields: [userId], references: [id])
   isActive  Boolean   @default(true)
-  items     CartItem[]
+  products  Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
   @@map("carts")
 }
 
-model CartItem {
-  id        String   @id @default(uuid())
-  cartId    String   
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  productId String   @unique
-  product   Product  @relation(fields: [productId], references: [id])
-  quantity  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
 
 model Order {
   id              String      @id @default(uuid())
@@ -113,12 +105,10 @@ model Order {
   refNumber       String
   totalAmount     Decimal     @db.Decimal(10, 2)
   shippingAddress String?
-  billingAddress  String?
   userId          String
   user            User        @relation(fields: [userId], references: [id])
-  productId       String      @unique
-  product         Product     @relation(fields: [productId], references: [id])
-  payments        Payment[]
+  products        Product[] // One order can have many products
+  payment        Payment?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 }
@@ -129,7 +119,7 @@ model Payment {
   billNumber   String
   amount       Decimal        @db.Decimal(10, 2)
   paymentMethod String
-  orderId      String
+  orderId      String         @unique
   order        Order          @relation(fields: [orderId], references: [id])
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt

@@ -12,6 +12,8 @@ import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator/user.decorator';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { UserService } from './user.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
@@ -29,8 +31,8 @@ export class UserController {
     return this.userService.getAllUsers();
   }
   @Post('create')
-  createUser(@Body() data: User) {
-    return this.userService.createUser(data);
+  createUser(@Body() userDto: CreateUserDto) {
+    return this.userService.createUser(userDto);
   }
 
   @Get('/:id')
@@ -39,7 +41,8 @@ export class UserController {
   }
 
   @Put('/:id')
-  update(@Param('id') id: string, @Body() data: User) {
-    return this.userService.updateUser(id, data);
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    console.log(updateUserDto);
+    return this.userService.updateUser(id, updateUserDto);
   }
 }

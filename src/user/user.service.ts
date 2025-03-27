@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async createUser(data: User) {
+  async createUser(data: CreateUserDto) {
     //check if user email doesn't exist
     const userExists = await this.prisma.user.findUnique({
       where: {
@@ -40,7 +41,20 @@ export class UserService {
   }
 
   async getAllUsers() {
-    const users = await this.prisma.user.findMany();
+    const users = await this.prisma.user.findMany({
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        phoneNumber: true,
+        address: true,
+        email: true,
+        role: true,
+        isActive: true,
+        status: true,
+        createdAt: true,
+      },
+    });
     return {
       data: users,
       message: 'Users fetched successfully',
@@ -69,7 +83,8 @@ export class UserService {
     };
   }
 
-  async updateUser(id: string, data: User) {
+  async updateUser(id: string, data: UpdateUserDto) {
+    // console.log(data);
     const user = await this.prisma.user.update({
       where: {
         id,
