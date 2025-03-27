@@ -17,11 +17,6 @@ export class CreateProductDto {
   @IsNumber()
   price: number;
 
-  @ApiProperty({ description: 'pick up date' })
-  @IsNotEmpty()
-  @IsString()
-  pickupDate?: string;
-
   @ApiProperty({ description: 'donation id' })
   @IsNotEmpty()
   @IsString()

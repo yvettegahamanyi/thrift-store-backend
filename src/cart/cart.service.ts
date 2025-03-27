@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Cart } from '@prisma/client';
 
 @Injectable()
 export class CartService {
@@ -12,13 +11,13 @@ export class CartService {
     try {
       // Check if user exists
       const user = await this.prisma.user.findUnique({ where: { id: userId } });
-      if (!user) throw new Error('User not found');
+      if (!user) throw new BadRequestException('User not found');
 
       // Check if product exists
       const product = await this.prisma.product.findUnique({
         where: { id: productId },
       });
-      if (!product) throw new Error('Product not found');
+      if (!product) throw new BadRequestException('Product not found');
 
       // Find the user's active cart
       let cart = await this.prisma.cart.findFirst({
@@ -44,12 +43,22 @@ export class CartService {
         // If cart exists, add the product (avoid duplicates)
         const productExists = cart.products.some((p) => p.id === productId);
         if (!productExists) {
-          await this.prisma.cart.update({
+          const updatedCart = await this.prisma.cart.update({
             where: { id: cart.id },
             data: {
               products: { connect: { id: productId } },
             },
+            include: {
+              products: true, // Include products in the returned cart
+            },
           });
+          return {
+            data: updatedCart,
+            message: 'Product added to cart successfully',
+            code: 201,
+          };
+        } else {
+          throw new BadRequestException('Product already exists in cart');
         }
       }
 
@@ -101,14 +110,48 @@ export class CartService {
           products: true, // Populate products in the cart
         },
       });
-
       if (!cart) {
-        return { message: 'No active cart found for this user' };
+        throw new BadRequestException('No active cart found for this user');
       }
 
       return {
         data: cart,
         message: 'Active cart fetched successfully',
+        code: 200,
+      };
+    } catch (error) {
+      console.error(error);
+      return { error: error.message };
+    }
+  }
+
+  async removeProductFromCart(cartId: string, productId: string) {
+    try {
+      // Check if cart exists
+      const cart = await this.prisma.cart.findUnique({
+        where: { id: cartId },
+        include: { products: true },
+      });
+      if (!cart) {
+        throw new BadRequestException('Cart not found');
+      }
+
+      // Check if product exists in the cart
+      const productExists = cart.products.some((p) => p.id === productId);
+      if (!productExists) {
+        throw new BadRequestException('Product not found in cart');
+      }
+
+      // Remove the product from the cart
+      await this.prisma.cart.update({
+        where: { id: cartId },
+        data: {
+          products: { disconnect: { id: productId } },
+        },
+      });
+
+      return {
+        message: 'Product removed from cart successfully',
         code: 200,
       };
     } catch (error) {

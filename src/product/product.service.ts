@@ -9,7 +9,7 @@ export class ProductService {
 
   async create(createProductDto: CreateProductDto) {
     try {
-      const product = this.prisma.product.create({
+      const product = await this.prisma.product.create({
         data: createProductDto,
       });
 
@@ -31,8 +31,12 @@ export class ProductService {
     }
   }
 
-  findAll() {
-    const products = this.prisma.product.findMany();
+  async findAll() {
+    const products = await this.prisma.product.findMany({
+      where: {
+        cartId: null,
+      },
+    });
     return {
       data: products,
       message: 'Products fetched successfully',
@@ -40,8 +44,8 @@ export class ProductService {
     };
   }
 
-  findOne(id: string) {
-    const product = this.prisma.product.findUnique({
+  async findOne(id: string) {
+    const product = await this.prisma.product.findUnique({
       where: {
         id: id,
       },
@@ -60,9 +64,9 @@ export class ProductService {
     };
   }
 
-  update(id: string, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto) {
     //check if the product exist
-    const product = this.prisma.product.findUnique({
+    const product = await this.prisma.product.findUnique({
       where: {
         id: id,
       },
