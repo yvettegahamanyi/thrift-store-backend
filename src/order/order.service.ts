@@ -67,7 +67,7 @@ export class OrderService {
     // If user is an admin, return all orders; otherwise, return only their orders
     const orders = await this.prisma.order.findMany({
       where: user.role === UserRole.ADMIN ? {} : { userId: user.id },
-      include: { products: true }, // Populate products
+      include: { products: true, user: true }, // Populate products
     });
 
     return {
@@ -80,7 +80,7 @@ export class OrderService {
   async findOne(id: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: id },
-      include: { products: true }, // Populate products
+      include: { products: true, user: true }, // Populate products
     });
 
     if (!order) throw new BadRequestException('Order not found');
@@ -108,7 +108,7 @@ export class OrderService {
         status,
         shippingAddress,
       },
-      include: { products: true }, // Populate products
+      include: { products: true, user: true }, // Populate products
     });
 
     return {

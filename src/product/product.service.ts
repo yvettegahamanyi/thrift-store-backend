@@ -79,7 +79,7 @@ export class ProductService {
       };
     }
     //update the product
-    const updatedProduct = this.prisma.product.update({
+    const updatedProduct = await this.prisma.product.update({
       where: {
         id: id,
       },

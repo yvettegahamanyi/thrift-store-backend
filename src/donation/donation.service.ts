@@ -48,6 +48,27 @@ export class DonationService {
         where: {
           donorId: user.id,
         },
+        include: {
+          donor: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              phoneNumber: true,
+              email: true,
+            },
+          },
+          products: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              price: true,
+              isActive: true,
+              createdAt: true,
+            },
+          },
+        },
       });
 
       return {
@@ -68,6 +89,27 @@ export class DonationService {
     const donation = await this.prisma.donation.findUnique({
       where: {
         id: id,
+      },
+      include: {
+        donor: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phoneNumber: true,
+            email: true,
+          },
+        },
+        products: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            price: true,
+            isActive: true,
+            createdAt: true,
+          },
+        },
       },
     });
     // if it is not found, throw an error
