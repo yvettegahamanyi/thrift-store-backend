@@ -31,10 +31,16 @@ export class ProductService {
     }
   }
 
-  async findAll() {
+  async findAll(searchKey?: string) {
     const products = await this.prisma.product.findMany({
       where: {
         cartId: null,
+        ...(searchKey && {
+          name: {
+            contains: searchKey,
+            mode: 'insensitive',
+          },
+        }),
       },
     });
     return {

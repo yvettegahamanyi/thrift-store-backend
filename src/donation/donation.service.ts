@@ -41,43 +41,46 @@ export class DonationService {
       );
     }
   }
-  async findAll(user: User) {
-    //check if user is a donor and fetch donations by donorId else fetch all donations
-    if (user.role === UserRole.DONOR) {
-      const donations = await this.prisma.donation.findMany({
-        where: {
-          donorId: user.id,
-        },
-        include: {
-          donor: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              phoneNumber: true,
-              email: true,
-            },
-          },
-          products: {
-            select: {
-              id: true,
-              name: true,
-              description: true,
-              price: true,
-              isActive: true,
-              createdAt: true,
-            },
-          },
-        },
-      });
+  async findAll(user: User, searchKey?: string) {
+    // Define the base query
+    const query: {
+      where?: Record<string, any>;
+      include: {
+        donor: boolean;
+        products: boolean;
+      };
+    } = {
+      include: {
+        donor: true,
+        products: true,
+      },
+    };
 
-      return {
-        data: donations,
-        message: 'Donations fetched successfully',
-        code: 200,
+    // If the user is a donor, restrict the query to their donations
+    if (user.role === UserRole.DONOR) {
+      query.where = {
+        donorId: user.id,
       };
     }
-    const donations = await this.prisma.donation.findMany();
+
+    // If a searchKey is provided, add search conditions
+    if (searchKey) {
+      query.where = {
+        ...query.where,
+        OR: [
+          {
+            donor: { firstName: { contains: searchKey, mode: 'insensitive' } },
+          },
+          { donor: { lastName: { contains: searchKey, mode: 'insensitive' } } },
+          { donor: { email: { contains: searchKey, mode: 'insensitive' } } },
+          { title: { contains: searchKey, mode: 'insensitive' } },
+        ],
+      };
+    }
+
+    // Execute the query
+    const donations = await this.prisma.donation.findMany(query);
+
     return {
       data: donations,
       message: 'Donations fetched successfully',
@@ -91,25 +94,8 @@ export class DonationService {
         id: id,
       },
       include: {
-        donor: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            phoneNumber: true,
-            email: true,
-          },
-        },
-        products: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            price: true,
-            isActive: true,
-            createdAt: true,
-          },
-        },
+        donor: true,
+        products: true,
       },
     });
     // if it is not found, throw an error

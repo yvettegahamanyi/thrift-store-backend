@@ -8,6 +8,9 @@ import { ProductModule } from './product/product.module';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
 import { PaymentModule } from './payment/payment.module';
+import { MtnPaymentService } from './mtn-payment/mtn-payment.service';
+import { MtnPaymentModule } from './mtn-payment/mtn-payment.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -22,6 +25,9 @@ import { PaymentModule } from './payment/payment.module';
     CartModule,
     OrderModule,
     PaymentModule,
+    MtnPaymentModule,
+    StatisticsModule,
   ],
+  providers: [MtnPaymentService],
 })
 export class AppModule {}

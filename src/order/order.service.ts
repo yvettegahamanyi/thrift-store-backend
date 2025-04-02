@@ -63,10 +63,16 @@ export class OrderService {
     };
   }
 
-  async findAll(user: User) {
-    // If user is an admin, return all orders; otherwise, return only their orders
+  async findAll(user: User, searchKey?: string) {
+    // If searchKey is defined, search orders by refNumber
     const orders = await this.prisma.order.findMany({
-      where: user.role === UserRole.ADMIN ? {} : { userId: user.id },
+      where: {
+        ...(searchKey
+          ? { refNumber: { contains: searchKey, mode: 'insensitive' } }
+          : user.role === UserRole.ADMIN
+            ? {}
+            : { userId: user.id }),
+      },
       include: { products: true, user: true }, // Populate products
     });
 

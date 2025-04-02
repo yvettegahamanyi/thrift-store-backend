@@ -6,11 +6,12 @@ import {
   Param,
   UseGuards,
   Put,
+  Query,
 } from '@nestjs/common';
 import { DonationService } from './donation.service';
 import { CreateDonationDto } from './dto/create-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
 import { GetUser } from 'src/auth/decorator/user.decorator';
 import { User } from '@prisma/client';
@@ -27,8 +28,13 @@ export class DonationController {
   }
 
   @Get()
-  findAll(@GetUser() user: User) {
-    return this.donationService.findAll(user);
+  @ApiQuery({
+    name: 'searchKey',
+    required: false,
+    type: String,
+  })
+  findAll(@GetUser() user: User, @Query('searchKey') searchKey?: string) {
+    return this.donationService.findAll(user, searchKey);
   }
 
   @Get(':id')

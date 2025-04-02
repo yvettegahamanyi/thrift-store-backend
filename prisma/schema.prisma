@@ -23,7 +23,6 @@ model User {
   address     String?  // User's address (optional)
   status      UserStatus @default(ACTIVE) // User's status
   role        UserRole @default(CUSTOMER) // User's role
-  isActive    Boolean  @default(true) // Whether the user account is active
   donations   Donation[] // User's donations
   carts       Cart[] // User's carts
   orders      Order[] // User's orders

@@ -6,13 +6,14 @@ import {
   Param,
   Put,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { GetUser } from 'src/auth/decorator/user.decorator';
 import { User } from '@prisma/client';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
 
 @ApiBearerAuth()
@@ -27,8 +28,13 @@ export class OrderController {
   }
 
   @Get()
-  findAll(@GetUser() user: User) {
-    return this.orderService.findAll(user);
+  @ApiQuery({
+    name: 'searchKey',
+    required: false,
+    type: String,
+  })
+  findAll(@GetUser() user: User, @Query('searchKey') searchKey?: string) {
+    return this.orderService.findAll(user, searchKey);
   }
 
   @Get(':id')

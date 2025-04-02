@@ -6,11 +6,12 @@ import {
   Param,
   UseGuards,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
 
 @ApiBearerAuth()
@@ -25,8 +26,13 @@ export class ProductController {
   }
 
   @Get()
-  findAll() {
-    return this.productService.findAll();
+  @ApiQuery({
+    name: 'searchKey',
+    required: false,
+    type: String,
+  })
+  findAll(@Query('searchKey') searchKey?: string) {
+    return this.productService.findAll(searchKey);
   }
 
   @Get(':id')

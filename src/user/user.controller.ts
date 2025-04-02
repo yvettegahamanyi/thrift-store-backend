@@ -6,8 +6,9 @@ import {
   Put,
   Post,
   UseGuards,
+  Query,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator/user.decorator';
 import { JwtGuard } from 'src/auth/guard/jwt.guard';
@@ -27,9 +28,15 @@ export class UserController {
   }
 
   @Get('/')
-  getAllUsers() {
-    return this.userService.getAllUsers();
+  @ApiQuery({
+    name: 'searchKey',
+    required: false,
+    type: String,
+  })
+  getAllUsers(@Query('searchKey') searchKey?: string) {
+    return this.userService.getAllUsers(searchKey);
   }
+
   @Post('create')
   createUser(@Body() userDto: CreateUserDto) {
     return this.userService.createUser(userDto);

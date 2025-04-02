@@ -40,8 +40,17 @@ export class UserService {
     };
   }
 
-  async getAllUsers() {
+  async getAllUsers(searchKey?: string) {
     const users = await this.prisma.user.findMany({
+      where: searchKey
+        ? {
+            OR: [
+              { firstName: { contains: searchKey, mode: 'insensitive' } },
+              { lastName: { contains: searchKey, mode: 'insensitive' } },
+              { email: { contains: searchKey, mode: 'insensitive' } },
+            ],
+          }
+        : undefined,
       select: {
         id: true,
         firstName: true,
