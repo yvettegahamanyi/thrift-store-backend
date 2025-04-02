@@ -50,7 +50,7 @@ export class AuthService {
       throw new ForbiddenException('Invalid credentials');
     }
 
-    if (user.status == UserStatus.ACTIVE) {
+    if (user.status != UserStatus.ACTIVE) {
       throw new ForbiddenException('User account is deactivated');
     }
 
