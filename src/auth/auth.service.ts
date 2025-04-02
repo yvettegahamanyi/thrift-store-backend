@@ -6,6 +6,7 @@ import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { UserStatus } from '@prisma/client';
 @Injectable()
 export class AuthService {
   constructor(
@@ -49,7 +50,7 @@ export class AuthService {
       throw new ForbiddenException('Invalid credentials');
     }
 
-    if (!user.isActive) {
+    if (user.status == UserStatus.ACTIVE) {
       throw new ForbiddenException('User account is deactivated');
     }
 

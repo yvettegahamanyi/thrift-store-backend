@@ -59,7 +59,6 @@ export class UserService {
         address: true,
         email: true,
         role: true,
-        isActive: true,
         status: true,
         createdAt: true,
       },
