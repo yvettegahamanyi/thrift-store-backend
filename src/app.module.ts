@@ -11,6 +11,7 @@ import { PaymentModule } from './payment/payment.module';
 import { MtnPaymentService } from './mtn-payment/mtn-payment.service';
 import { MtnPaymentModule } from './mtn-payment/mtn-payment.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { FileModule } from './files/file.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { StatisticsModule } from './statistics/statistics.module';
     PaymentModule,
     MtnPaymentModule,
     StatisticsModule,
+    FileModule,
   ],
   providers: [MtnPaymentService],
 })
